@@ -17,10 +17,10 @@ crontab -e
 Set LOCAL_TOKEN and DOMAIN_LIST[whitelist] in server.py
 It will monitor the /target/ folder which in server.py directory
 
-'''
+```
 LOCAL_TOKEN ="your_token"
 DOMAIN_LIST = ["*.regin.0","*.regin.1"]
-'''
+```
 
 Set "SERVER_URL,TOKEN,CERT_FILE_NAME,MOVE_PATH" for your client.py
 

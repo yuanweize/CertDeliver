@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 User=root
-WorkingDirectory=/opt/CertDeliver
+WorkingDirectory=/path/CertDeliver
 LimitNOFILE=4096
 ExecStart=/usr/bin/python3 server.py
 Restart=on-failure

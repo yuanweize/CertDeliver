@@ -1,5 +1,6 @@
 # CertDeliver
-证书分发服务, Certificate Deliver Service
+证书分发服务
+Certificate Deliver Service
 
 ## 1. Set certbot
 Command for set up certbot 

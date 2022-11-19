@@ -49,3 +49,15 @@ Cron only for client
 #Run at 06:30 AM and 06:30 PM
 ```
 
+nginx reverse proxy 
+```
+location ^~ /
+{
+    proxy_pass http://backend:8000;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header REMOTE-HOST $remote_addr;
+}
+
+#PROXY-END/

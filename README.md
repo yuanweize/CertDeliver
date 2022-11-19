@@ -24,12 +24,12 @@ DOMAIN_LIST = ["*.regin.0","*.regin.1"]
 
 Set "SERVER_URL,TOKEN,CERT_FILE_NAME,MOVE_PATH" for your client.py
 
-'''
+```
 SERVER_URL = "https://cert/api/v1/"
 TOKEN = "your token"
 CERT_FILE_NAME = "cert"  #[same as --cert-name]
 MOVE_PATH = "/etc/XrayR/cert" #Your target dir
-'''
+```
 
 Cron only for client
 

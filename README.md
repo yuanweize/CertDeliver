@@ -3,9 +3,9 @@
 
 Command for set up certbot 
 
-'''
+```
 certbot certonly -a dns-aliyun --certbot-dns-aliyun:dns-aliyun-credentials /etc/letsencrypt/YOURDNSKEY -d *.regin.0 -d *.regin.1 --force-renewal --cert-name cert    #Option: --dry-run
-'''
+```
 
 This cron command updates the certificate by certbot and runs a hook job [cert_hook.py] that compresses the certificate dir 'target_dir="cert"'[same as --cert-name] in 'input_path = "/etc/letsencrypt/live/"' into a .zip file and move to the target directory 'output_path = "/opt/CertDeliver/targets/"' 
 

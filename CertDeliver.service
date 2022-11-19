@@ -1,0 +1,14 @@
+[Unit]
+Description=CertDeliver
+After=network.target
+
+[Service]
+User=root
+WorkingDirectory=/opt/CertDeliver
+LimitNOFILE=4096
+ExecStart=/usr/bin/python3 server.py
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target

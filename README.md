@@ -33,7 +33,7 @@ systemctl status CertDeliver
 ```
 
 ## 3. Set client
-Set "SERVER_URL,TOKEN,CERT_FILE_NAME,MOVE_PATH" for your client.py
+Set "SERVER_URL, TOKEN, CERT_FILE_NAME, MOVE_PATH" for your client.py
 
 ```
 SERVER_URL = "https://cert/api/v1/"

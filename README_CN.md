@@ -14,7 +14,7 @@ crontab -e
 在server.py中设置LOCAL_TOKEN和DOMAIN_LIST[白名单]。
 它将监视server.py目录下的/target/文件夹
 ```
-LOCAL_TOKEN = "your_token" 。
+LOCAL_TOKEN = "你的令牌" 。
 DOMAIN_LIST = ["*.regin.0", "*.regin.1"] 。
 ```
 通过systemctl运行的守护程序
@@ -23,25 +23,25 @@ wget https://raw.githubusercontent.com/yuanweize/CertDeliver/main/CertDeliver.se
 mv CertDeliver.service /etc/systemd/system/CertDeliver.service
 systemctl daemon-reload
 systemctl enable CertDeliver
-systemctl 重新启动 CertDeliver
+systemctl restart CertDeliver
 systemctl status CertDeliver
 ```
 ## 3.设置客户端
-为你的客户端.py设置 "SERVER_URL, TOKEN, CERT_FILE_NAME, MOVE_PATH"。
+为你的server.py设置 "SERVER_URL, TOKEN, CERT_FILE_NAME, MOVE_PATH"。
 ```
 server_url = "https://cert/api/v1/"
 TOKEN = "你的令牌"
-CERT_FILE_NAME = "cert" #[与-cert-name相同]
+CERT_FILE_NAME = "cert" #[与--cert-name相同]
 MOVE_PATH = "/etc/XrayR/cert" #你的目标目录
 ```
-Cron只用于客户端
+Cron作业只用于客户端
 ```
 30 6,18 * * * sleep 100 && python3 /opt/CertDeliver/client.py"
 #在上午06:30和下午06:30运行
 ```
 nginx反向代理
 ```
-位置 ^~ /
+location ^~ /
 {
 proxy_pass http://backend:8000。
 proxy_set_header Host $host;

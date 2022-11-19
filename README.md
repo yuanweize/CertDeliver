@@ -1,6 +1,7 @@
 # CertDeliver
 证书分发服务, Certificate Deliver Service
 
+## 1. Set certbot
 Command for set up certbot 
 
 ```
@@ -13,7 +14,7 @@ This cron command updates the certificate by certbot and runs a hook job [cert_h
 crontab -e
 0 0,12 * * * sleep 461 && certbot renew -q --post-hook "/usr/bin/python3 /opt/CertDeliver/cert_hook.py"
 ```
-
+## 2. Set server
 Set LOCAL_TOKEN and DOMAIN_LIST[whitelist] in server.py
 It will monitor the /target/ folder which in server.py directory
 
@@ -21,7 +22,17 @@ It will monitor the /target/ folder which in server.py directory
 LOCAL_TOKEN ="your_token"
 DOMAIN_LIST = ["*.regin.0","*.regin.1"]
 ```
+Daemon reload by systemctl
+```
+wget https://raw.githubusercontent.com/yuanweize/CertDeliver/main/CertDeliver.service
+mv CertDeliver.service /etc/systemd/system/CertDeliver.service
+systemctl daemon-reload
+systemctl enable CertDeliver
+systemctl restart CertDeliver
+systemctl status CertDeliver
+```
 
+## 3. Set client
 Set "SERVER_URL,TOKEN,CERT_FILE_NAME,MOVE_PATH" for your client.py
 
 ```
@@ -38,5 +49,3 @@ Cron only for client
 #Run at 06:30 AM and 06:30 PM
 ```
 
-systemctl status CertDeliver
-/etc/systemd/system/CertDeliver.service

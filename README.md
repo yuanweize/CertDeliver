@@ -12,7 +12,6 @@ Cron only for client
 ```
 30 6,18 * * * sleep 100 && python3 /opt/CertDeliver/client.py" 
 #Run at 06:30 AM and 06:30 PM
-
 ```
 systemctl status CertDeliver
 /etc/systemd/system/CertDeliver.service

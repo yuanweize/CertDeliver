@@ -5,7 +5,7 @@
 ```
 certbot certonly -a dns-aliyun --certbot-dns-aliyun:dns-aliyun-credentials /etc/letsencrypt/YOURDNSKEY -d *.regin.0 -d *.regin.1 --force-renewal --cert-name cert #Option: --dry-run
 ```
-这个cron命令通过certbot更新证书，并运行一个钩子工作[cert_hook.py]，将'input_path = "/etc/letsencrypt/live/"'中的证书目录'target_dir="cert"'[与-cert-name相同]压缩成一个.zip文件并移动到目标目录'output_path = "/opt/CertDeliver/targets/"
+这个cron命令通过certbot更新证书，并运行一个钩子工作[cert_hook.py]，将`input_path = "/etc/letsencrypt/live/"`中的证书目录`target_dir="cert"`[与-cert-name相同]压缩成一个.zip文件并移动到目标目录`output_path = "/opt/CertDeliver/targets/"`
 ```
 crontab -e
 0 0,12 * * * sleep 461 && certbot renew -q --post-hook "/usr/bin/python3 /opt/CertDeliver/cert_hook.py"

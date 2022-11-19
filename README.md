@@ -22,7 +22,7 @@ It will monitor the /target/ folder which in server.py directory
 LOCAL_TOKEN ="your_token"
 DOMAIN_LIST = ["*.regin.0","*.regin.1"]
 ```
-Daemon reload by systemctl
+Daemon run by systemctl
 ```
 wget https://raw.githubusercontent.com/yuanweize/CertDeliver/main/CertDeliver.service
 mv CertDeliver.service /etc/systemd/system/CertDeliver.service

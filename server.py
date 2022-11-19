@@ -6,7 +6,7 @@ import os,logging, socket
 
 LOCAL_TOKEN ="your_token"
 LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
-DOMAIN_LIST = ["www.baidu.com","www.google.com"]#Your domain name managed by certbot
+DOMAIN_LIST = ["www.baidu.com","www.google.com"]#Your domain names managed by certbot
 WHITE_LIST = {}
 
 app = FastAPI()

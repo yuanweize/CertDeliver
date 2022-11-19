@@ -18,15 +18,15 @@ def move_cert(fname):
         if os.path.exists(MOVE_PATH+"_"+"bak"):
             os.system("rm -rf "+MOVE_PATH+"_"+"bak")
         os.rename(MOVE_PATH,MOVE_PATH+"_"+"bak")
-        os.mkdir(MOVE_PATH)
-        os.system("unzip "+LOCAL_PATH+"/cert/"+fname+" -d "+TMP_PATH)
-        try:
-            os.system("mv "+TMP_PATH+"fullchain.pem "+MOVE_PATH+"/fullchain.pem")
-            os.system("mv "+TMP_PATH+"privkey.pem "+MOVE_PATH+"/privkey.pem")
-        except:
-            logging.warning("move cert error")
-        logging.info("move cert success")
-        os.system("rm -rf "+TMP_PATH)
+    os.mkdir(MOVE_PATH)
+    os.system("unzip "+LOCAL_PATH+"/cert/"+fname+" -d "+TMP_PATH)
+    try:
+        os.system("mv "+TMP_PATH+"fullchain.pem "+MOVE_PATH+"/fullchain.pem")
+        os.system("mv "+TMP_PATH+"privkey.pem "+MOVE_PATH+"/privkey.pem")
+    except:
+        logging.warning("move cert error")
+    logging.info("move cert success")
+    os.system("rm -rf "+TMP_PATH)
     restart_xrayr=os.popen("XrayR restart")
     if "成功" in restart_xrayr.read():
         logging.info("restart xrayr success")

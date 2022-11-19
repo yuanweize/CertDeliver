@@ -1,5 +1,6 @@
 # CertDeliver
 证书分发服务 Certificate Deliver Service
+# [English](https://github.com/yuanweize/CertDeliver/blob/main/README.md) | [中文](https://github.com/yuanweize/CertDeliver/blob/main/README_CN.md)
 ## 1.设置certbot
 设置certbot的命令
 ```

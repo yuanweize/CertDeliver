@@ -16,6 +16,7 @@ crontab -e
 ```
 ## 2. Set server
 Set LOCAL_TOKEN and DOMAIN_LIST[whitelist] in server.py
+
 It will monitor the /target/ folder which in server.py directory
 
 ```

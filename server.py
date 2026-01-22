@@ -5,12 +5,13 @@ import os,logging, socket
 
 
 LOCAL_TOKEN ="your_token"
-LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
 DOMAIN_LIST = ["www.baidu.com","www.google.com"]#Your domain names managed by certbot
 WHITE_LIST = {}
-
-app = FastAPI()
+LOCAL_PATH = os.path.dirname(os.path.abspath(__file__))
 logging.basicConfig(format='%(asctime)s:%(levelname)s:%(message)s-----server:app', level=logging.INFO,filename=LOCAL_PATH+'/log_server',filemode='a')
+
+
+app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 
 @app.get("/")
 def read_root(request: Request):

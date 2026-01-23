@@ -82,7 +82,7 @@ sympy==1.11.1
 telegram==0.0.1
 TgCrypto==1.2.3
 tldextract==3.3.1
-tornado==6.1
+tornado==6.5
 trio==0.22.0
 trio-websocket==0.9.2
 typing-extensions==4.4.0

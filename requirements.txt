@@ -88,7 +88,7 @@ trio-websocket==0.9.2
 typing-extensions==4.4.0
 tzdata==2022.4
 tzlocal==4.2
-urllib3==1.26.12
+urllib3==2.6.3
 uvicorn==0.19.0
 web.py==0.62
 wsproto==1.2.0

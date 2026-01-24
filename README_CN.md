@@ -260,7 +260,6 @@ ruff check src/
 
 <div align="center">
 
-Made with ❤️ by [yuanweize](https://github.com/yuanweize)
 
 **[⬆ 返回顶部](#-certdeliver)**
 

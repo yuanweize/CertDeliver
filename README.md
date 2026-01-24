@@ -260,7 +260,6 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 <div align="center">
 
-Made with ❤️ by [yuanweize](https://github.com/yuanweize)
 
 **[⬆ Back to Top](#-certdeliver)**
 

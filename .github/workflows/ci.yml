@@ -49,13 +49,6 @@ jobs:
         run: |
           pytest --cov=src/certdeliver --cov-report=xml --cov-report=term-missing
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        if: matrix.python-version == '3.12'
-        with:
-          files: ./coverage.xml
-          fail_ci_if_error: false
-
   lint:
     name: Lint & Type Check
     runs-on: ubuntu-latest
@@ -123,7 +116,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Build Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: docker/Dockerfile.server

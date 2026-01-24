@@ -1,0 +1,40 @@
+# CertDeliver Docker Compose Configuration
+# Deploy server with persistent volumes
+
+services:
+  server:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.server
+    container_name: certdeliver-server
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - CERTDELIVER_TOKEN=${CERTDELIVER_TOKEN}
+      - CERTDELIVER_DOMAIN_LIST=${CERTDELIVER_DOMAIN_LIST}
+      - CERTDELIVER_HOST=0.0.0.0
+      - CERTDELIVER_PORT=8000
+    volumes:
+      # Certificate storage
+      - certdeliver-targets:/opt/CertDeliver/targets
+      # Logs
+      - certdeliver-logs:/var/log/certdeliver
+    healthcheck:
+      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8000/health', timeout=5).raise_for_status()"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - certdeliver-net
+
+volumes:
+  certdeliver-targets:
+    driver: local
+  certdeliver-logs:
+    driver: local
+
+networks:
+  certdeliver-net:
+    driver: bridge

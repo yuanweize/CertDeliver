@@ -1,0 +1,46 @@
+# CertDeliver Server
+# Multi-stage build for smaller image size
+
+FROM python:3.12-slim AS builder
+
+WORKDIR /app
+
+# Install build dependencies
+RUN pip install --no-cache-dir hatch
+
+# Copy source code
+COPY pyproject.toml .
+COPY src/ src/
+COPY README.md .
+
+# Build wheel
+RUN hatch build -t wheel
+
+# ===== Production image =====
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# Create non-root user
+RUN useradd --create-home --shell /bin/bash certdeliver
+
+# Install the package
+COPY --from=builder /app/dist/*.whl /tmp/
+RUN pip install --no-cache-dir /tmp/*.whl && rm /tmp/*.whl
+
+# Create directories
+RUN mkdir -p /opt/CertDeliver/targets /var/log/certdeliver && \
+    chown -R certdeliver:certdeliver /opt/CertDeliver /var/log/certdeliver
+
+# Switch to non-root user
+USER certdeliver
+
+# Expose port
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+    CMD python -c "import httpx; httpx.get('http://localhost:8000/health', timeout=5).raise_for_status()"
+
+# Run server
+CMD ["certdeliver-server"]

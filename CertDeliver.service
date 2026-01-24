@@ -1,14 +1,23 @@
 [Unit]
-Description=CertDeliver
+Description=CertDeliver Server
+Documentation=https://github.com/yuanweize/CertDeliver
 After=network.target
 
 [Service]
+Type=simple
 User=root
-WorkingDirectory=/path/CertDeliver
-LimitNOFILE=4096
-ExecStart=/usr/bin/python3 server.py
+WorkingDirectory=/opt/CertDeliver
+Environment="PATH=/opt/CertDeliver/venv/bin"
+EnvironmentFile=/opt/CertDeliver/.env
+ExecStart=/opt/CertDeliver/venv/bin/certdeliver-server
 Restart=on-failure
 RestartSec=5s
+LimitNOFILE=4096
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/opt/CertDeliver/targets /var/log/certdeliver
 
 [Install]
 WantedBy=multi-user.target

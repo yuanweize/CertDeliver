@@ -1,0 +1,33 @@
+# CertDeliver Configuration (YAML format)
+# This is an alternative to environment variables
+# Place this file at /etc/certdeliver/config.yaml
+
+# Server Configuration
+server:
+  token: "your-secure-token-here"
+  domain_list:
+    - server1.example.com
+    - server2.example.com
+  host: "0.0.0.0"
+  port: 8000
+  targets_dir: /opt/CertDeliver/targets
+  log_file: /var/log/certdeliver/server.log
+  rate_limit_enabled: true
+  rate_limit_requests: 100
+
+# Client Configuration
+client:
+  server_url: "https://cert.example.com/api/v1/"
+  token: "your-secure-token-here"
+  cert_name: cert
+  cert_dest_path: /etc/ssl/certs/certdeliver
+  local_cache_dir: /var/cache/certdeliver
+  post_update_command: "systemctl reload nginx"
+  timeout: 30
+  verify_ssl: true
+
+# Certbot Hook Configuration
+hook:
+  letsencrypt_live_dir: /etc/letsencrypt/live
+  output_dir: /opt/CertDeliver/targets
+  cert_name: cert

@@ -4,6 +4,7 @@
 
 **Automated SSL Certificate Distribution Service**
 
+[![CI](https://github.com/yuanweize/CertDeliver/actions/workflows/ci.yml/badge.svg)](https://github.com/yuanweize/CertDeliver/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![License](https://img.shields.io/badge/License-GPL_v3-blue?style=for-the-badge)](LICENSE)

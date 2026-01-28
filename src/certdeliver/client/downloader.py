@@ -134,42 +134,55 @@ class CertificateDownloader:
             "download": str(download_mode).lower(),
         }
 
-        logger.info(f"Requesting certificate: {url}")
+        retries = 3
+        backoff_factor = 2
 
-        try:
-            response = self.client.get(url, params=params)
+        for attempt in range(retries):
+            try:
+                logger.info(f"Requesting certificate: {url} (Attempt {attempt + 1}/{retries})")
+                response = self.client.get(url, params=params)
 
-            if response.status_code == 200:
-                # Check if response is a file or JSON
-                content_type = response.headers.get("content-type", "")
+                if response.status_code == 200:
+                    # Check if response is a file or JSON
+                    content_type = response.headers.get("content-type", "")
 
-                if (
-                    "application/zip" in content_type
-                    or "application/octet-stream" in content_type
-                    or "content-disposition" in response.headers
-                ):
-                    logger.info("Certificate download successful")
-                    return response.content
+                    if (
+                        "application/zip" in content_type
+                        or "application/octet-stream" in content_type
+                        or "content-disposition" in response.headers
+                    ):
+                        logger.info("Certificate download successful")
+                        return response.content
+                    else:
+                        # JSON response (no update needed or error)
+                        try:
+                            data = response.json()
+                            if data.get("status") == "ok":
+                                logger.info("Certificate is up to date")
+                            else:
+                                logger.info(f"Server response: {data}")
+                        except Exception:
+                            logger.warning(f"Unexpected response: {response.text[:200]}")
+                        return None
                 else:
-                    # JSON response (no update needed or error)
-                    try:
-                        data = response.json()
-                        if data.get("status") == "ok":
-                            logger.info("Certificate is up to date")
-                        else:
-                            logger.info(f"Server response: {data}")
-                    except Exception:
-                        logger.warning(f"Unexpected response: {response.text[:200]}")
-                    return None
-            else:
-                logger.error(
-                    f"Server returned error: {response.status_code} - {response.text[:200]}"
-                )
-                return None
+                    logger.error(
+                        f"Server returned error: {response.status_code} - {response.text[:200]}"
+                    )
+                     # Don't retry on client errors (4xx), only server errors (5xx)
+                    if 400 <= response.status_code < 500:
+                        return None
 
-        except httpx.RequestError as e:
-            logger.error(f"Request failed: {e}")
-            return None
+            except httpx.RequestError as e:
+                logger.warning(f"Request failed: {e}")
+
+            # Exponential backoff if not the last attempt
+            if attempt < retries - 1:
+                sleep_time = backoff_factor ** attempt
+                logger.info(f"Retrying in {sleep_time} seconds...")
+                time.sleep(sleep_time)
+
+        logger.error(f"Failed to download certificate after {retries} attempts")
+        return None
 
     def _extract_filename_from_response(self, response: httpx.Response) -> str | None:
         """Extract filename from Content-Disposition header."""

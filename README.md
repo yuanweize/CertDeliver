@@ -207,16 +207,22 @@ CertDeliver/
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/` | GET | Service info and client IP |
-| `/health` | GET | Health check for monitoring |
-| `/api/v1/{file}` | GET | Download/check certificate |
+| `/` | GET | **Root**: Service info and client IP verification |
+| `/health` | GET | **Health Check**: Service status monitoring |
+| `/api/v1/{file}` | GET | **Download**: Certification download endpoint |
 
-### Query Parameters
+### Query Parameters (`/api/v1/{file}`)
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `token` | string | ✅ | Authentication token |
-| `download` | bool | ❌ | Force download mode |
+| `token` | string | ✅ | API authentication token |
+| `download` | bool | ❌ | Force download mode (`true` to treat as file download) |
+
+### Example Request
+
+```bash
+curl "https://cert.example.com/api/v1/cert_1234567890?token=my-secret-token&download=true"
+```
 
 ## 🔒 Security
 

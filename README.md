@@ -208,7 +208,8 @@ CertDeliver/
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/` | GET | **Root**: Service info and client IP verification |
-| `/health` | GET | **Health Check**: Service status monitoring |
+| `/health` | GET | **Health Check**: Service status monitoring (checks storage) |
+| `/metrics` | GET | **Metrics**: Prometheus metrics endpoint |
 | `/api/v1/{file}` | GET | **Download**: Certification download endpoint |
 
 ### Query Parameters (`/api/v1/{file}`)

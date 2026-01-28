@@ -73,6 +73,14 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
+    # Initialize Prometheus metrics
+    try:
+        from prometheus_fastapi_instrumentator import Instrumentator
+        Instrumentator().instrument(app).expose(app)
+        logger.info("Prometheus metrics enabled at /metrics")
+    except ImportError:
+        logger.warning("prometheus-fastapi-instrumentator not installed, metrics disabled")
+
     # Add root endpoint
     @app.get("/")
     async def root(request: Request) -> JSONResponse:
@@ -91,11 +99,28 @@ def create_app() -> FastAPI:
     @app.get("/health")
     async def health_check() -> JSONResponse:
         """Health check endpoint for monitoring."""
+        status = "healthy"
+        details: dict[str, object] = {"service": "certdeliver-server"}
+
+        # Check targets directory
+        if settings.targets_dir.exists():
+            try:
+                cert_count = len(list(settings.targets_dir.glob("*.zip")))
+                details["targets_dir"] = str(settings.targets_dir)
+                details["available_certs"] = cert_count
+            except Exception as e:
+                details["storage_error"] = str(e)
+                status = "degraded"
+        else:
+            status = "degraded"
+            details["error"] = "Targets directory not found"
+
         return JSONResponse(
             {
-                "status": "healthy",
-                "service": "certdeliver-server",
-            }
+                "status": status,
+                **details
+            },
+            status_code=200 if status == "healthy" else 503
         )
 
     # Include API routes

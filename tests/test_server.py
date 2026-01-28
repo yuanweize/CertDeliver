@@ -74,9 +74,28 @@ class TestServerApp:
         data = response.json()
         assert "CertDeliver" in data.get("service", "")
 
-    def test_health_endpoint(self, client):
+    def test_health_endpoint(self, client, mock_settings):
         """Test health check endpoint."""
-        response = client.get("/health")
+        # Mock directory existence
+        with patch("pathlib.Path.exists", return_value=True):
+            with patch("pathlib.Path.glob", return_value=[]):
+                response = client.get("/health")
+                assert response.status_code == 200
+                data = response.json()
+                assert data.get("status") == "healthy"
+                assert "available_certs" in data
+
+    def test_health_endpoint_degraded(self, client, mock_settings):
+        """Test health check degraded when targets dir missing."""
+        with patch("pathlib.Path.exists", return_value=False):
+            response = client.get("/health")
+            assert response.status_code == 503
+            data = response.json()
+            assert data.get("status") == "degraded"
+            assert "error" in data
+
+    def test_metrics_endpoint(self, client):
+        """Test Prometheus metrics endpoint exists."""
+        response = client.get("/metrics")
         assert response.status_code == 200
-        data = response.json()
-        assert data.get("status") == "healthy"
+        assert "certdeliver" in response.text or "python" in response.text

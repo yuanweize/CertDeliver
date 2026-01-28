@@ -62,8 +62,7 @@ class WhitelistManager:
         try:
             # Get all address info for the domain
             addr_info = socket.getaddrinfo(
-                domain, None,
-                socket.AF_UNSPEC if self.enable_ipv6 else socket.AF_INET
+                domain, None, socket.AF_UNSPEC if self.enable_ipv6 else socket.AF_INET
             )
 
             for info in addr_info:
@@ -83,24 +82,20 @@ class WhitelistManager:
     async def _resolve_domain(self, domain: str) -> set[str]:
         """
         Asynchronously resolve a domain to IP addresses.
-        
+
         Args:
             domain: Domain name to resolve.
-        
+
         Returns:
             Set of resolved IP addresses.
         """
         loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(
-            None,
-            self._resolve_domain_sync,
-            domain
-        )
+        return await loop.run_in_executor(None, self._resolve_domain_sync, domain)
 
     async def refresh_cache(self, force: bool = False) -> None:
         """
         Refresh the IP cache by resolving all domains.
-        
+
         Args:
             force: Force refresh even if cache is valid.
         """
@@ -117,14 +112,13 @@ class WhitelistManager:
             new_cache: dict[str, set[str]] = {}
 
             # Resolve all domains concurrently
-            tasks = [
-                self._resolve_domain(domain)
-                for domain in self.domains
-            ]
-            
+            tasks = [self._resolve_domain(domain) for domain in self.domains]
+
             # We need to type hint results to satisfy MyPy
             # gather with return_exceptions=True can include BaseException
-            results: list[set[str] | BaseException] = await asyncio.gather(*tasks, return_exceptions=True)
+            results: list[set[str] | BaseException] = await asyncio.gather(
+                *tasks, return_exceptions=True
+            )
 
             for domain, result in zip(self.domains, results, strict=False):
                 if isinstance(result, BaseException):
@@ -133,8 +127,8 @@ class WhitelistManager:
                     if domain in self._cache:
                         new_cache[domain] = self._cache[domain]
                 elif isinstance(result, set):
-                     # Explicit check to satisfy MyPy that result is set[str]
-                     new_cache[domain] = result
+                    # Explicit check to satisfy MyPy that result is set[str]
+                    new_cache[domain] = result
 
             self._cache = new_cache
             self._last_update = datetime.now()

@@ -108,8 +108,6 @@ class ClientSettings(BaseSettings):
     timeout: int = Field(default=30, description="Request timeout in seconds")
     verify_ssl: bool = Field(default=True, description="Verify SSL certificates")
 
-
-
     @field_validator("cert_dest_path", "local_cache_dir", mode="before")
     @classmethod
     def parse_path(cls, v: str | Path) -> Path:

@@ -30,7 +30,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     domains = settings.domain_list
     if isinstance(domains, str):
         domains = [d.strip() for d in domains.split(",") if d.strip()]
-    
+
     init_routes(token=settings.token, domains=domains)
 
     logger.info("CertDeliver server starting...")

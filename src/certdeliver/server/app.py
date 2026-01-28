@@ -151,6 +151,29 @@ def create_app() -> FastAPI:
                 cert_count = len(list(settings.targets_dir.glob("*.zip")))
                 details["targets_dir"] = str(settings.targets_dir)
                 details["available_certs"] = cert_count
+
+                # Check certificate expiry
+                from datetime import datetime, timezone
+
+                from ..utils.cert_utils import get_zip_cert_expiry
+
+                min_days = None
+                for zip_file in settings.targets_dir.glob("*.zip"):
+                    expiry = get_zip_cert_expiry(zip_file)
+                    if expiry:
+                        days = (
+                            expiry - datetime.now(timezone.utc)
+                        ).total_seconds() / 86400
+                        if min_days is None or days < min_days:
+                            min_days = days
+
+                if min_days is not None:
+                    details["min_days_to_expiry"] = round(min_days, 2)
+                    if (
+                        min_days < 7
+                    ):  # Warning if any cert is expiring in less than 7 days
+                        status = "degraded"
+                        details["warning"] = "Certificate expiring soon"
             except Exception as e:
                 details["storage_error"] = str(e)
                 status = "degraded"

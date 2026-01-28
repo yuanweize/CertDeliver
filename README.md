@@ -79,13 +79,19 @@ docker compose up -d
 CertDeliver uses environment variables for configuration. Create a `.env` file:
 
 ```bash
-# Server Configuration
-CERTDELIVER_TOKEN=your-secure-random-token
-CERTDELIVER_DOMAIN_LIST=client1.example.com,client2.example.com
+# Server Configuration (Multi-tenant)
+# Supports JSON format mapping tokens to allowed file patterns
+CERTDELIVER_TOKENS='{"clientA-token": ["clientA_*.zip"], "admin-token": ["*"]}'
 CERTDELIVER_PORT=8000
 CERTDELIVER_TARGETS_DIR=/opt/CertDeliver/targets
 
-# Client Configuration
+# ... legacy configuration is still supported ...
+# CERTDELIVER_TOKEN=legacy-master-token
+```
+ 
+ > 📄 See [config/.env.example](config/.env.example) for all available options.
+ 
+ ## 📦 Server Setup
 CERTDELIVER_CLIENT_SERVER_URL=https://cert.example.com/api/v1/
 CERTDELIVER_CLIENT_TOKEN=your-secure-random-token
 CERTDELIVER_CLIENT_CERT_NAME=cert

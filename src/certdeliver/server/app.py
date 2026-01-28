@@ -11,11 +11,20 @@ from contextlib import asynccontextmanager
 import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from prometheus_client import Gauge
 
 from ..config import get_server_settings, setup_logging
 from .routes import init_routes, router
 
 logger = logging.getLogger(__name__)
+
+# Prometheus metrics
+# Labels: cert_name
+expiry_gauge = Gauge(
+    "certdeliver_certificate_expiry_days",
+    "Number of days until the certificate expires",
+    ["cert_name"],
+)
 
 
 @asynccontextmanager
@@ -26,19 +35,47 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     settings = get_server_settings()
 
     # Initialize routes with settings
-    # Initialize routes with settings
     domains = settings.domain_list
     if isinstance(domains, str):
         domains = [d.strip() for d in domains.split(",") if d.strip()]
 
-    init_routes(token=settings.token, domains=domains)
+    init_routes(token=settings.token, domains=domains, tokens=settings.tokens)
 
     logger.info("CertDeliver server starting...")
-    logger.info(f"Targets directory: {settings.targets_dir}")
-    logger.info(f"Whitelisted domains: {len(settings.domain_list)}")
+
+    # Start background certificate monitoring
+    import asyncio
+    from datetime import datetime, timezone
+
+    from ..utils.cert_utils import get_zip_cert_expiry
+
+    async def monitor_certs() -> None:
+        while True:
+            try:
+                if settings.targets_dir.exists():
+                    for zip_file in settings.targets_dir.glob("*.zip"):
+                        expiry: datetime | None = get_zip_cert_expiry(zip_file)
+                        if expiry:
+                            now: datetime = datetime.now(timezone.utc)
+                            days_remaining: float = (expiry - now).total_seconds() / (
+                                24 * 3600
+                            )
+                            cert_name: str = zip_file.stem.split("_")[0]
+                            expiry_gauge.labels(cert_name=cert_name).set(days_remaining)
+                            logger.debug(
+                                f"Monitored cert {cert_name}: {days_remaining:.2f} days remaining"
+                            )
+            except Exception as e:
+                logger.error(f"Error in cert monitoring task: {e}")
+
+            # Run every hour
+            await asyncio.sleep(3600)
+
+    monitor_task = asyncio.create_task(monitor_certs())
 
     yield
 
+    monitor_task.cancel()
     logger.info("CertDeliver server shutting down...")
 
 
@@ -55,8 +92,11 @@ def create_app() -> FastAPI:
     setup_logging(log_file=settings.log_file, component="certdeliver.server")
 
     # Validate configuration
-    if not settings.token:
-        logger.error("CERTDELIVER_TOKEN environment variable is not set!")
+    # Validate configuration
+    if not settings.token and not settings.tokens:
+        logger.error(
+            "No authentication tokens configured (CERTDELIVER_TOKEN or CERTDELIVER_TOKENS)!"
+        )
         sys.exit(1)
 
     if not settings.domain_list:

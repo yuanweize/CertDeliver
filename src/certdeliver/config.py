@@ -25,7 +25,11 @@ class ServerSettings(BaseSettings):
     )
 
     # Authentication
-    token: str = Field(default="", description="API authentication token")
+    token: str = Field(default="", description="Legacy master API token (deprecated)")
+    tokens: dict[str, list[str]] = Field(
+        default_factory=dict,
+        description="Map of tokens to allowed file patterns (multi-tenant)",
+    )
 
     # Domain whitelist
     domain_list: list[str] | str = Field(
@@ -50,6 +54,24 @@ class ServerSettings(BaseSettings):
     rate_limit_enabled: bool = Field(default=True, description="Enable rate limiting")
     rate_limit_requests: int = Field(default=100, description="Max requests per minute")
 
+    @field_validator("tokens", mode="before")
+    @classmethod
+    def parse_tokens(cls, v: str | dict) -> dict[str, list[str]]:
+        """Parse tokens from JSON string or dict."""
+        if isinstance(v, str):
+            import json
+
+            try:
+                # Type verification for JSON parsing
+                parsed = json.loads(v)
+                if isinstance(parsed, dict):
+                    return parsed
+                return {}
+            except json.JSONDecodeError:
+                logger.warning("Failed to parse CERTDELIVER_TOKENS configuration")
+                return {}
+        return v
+
     @field_validator("domain_list", mode="before")
     @classmethod
     def parse_domain_list(cls, v: list[str] | str) -> list[str]:
@@ -57,6 +79,12 @@ class ServerSettings(BaseSettings):
         if isinstance(v, str):
             return [d.strip() for d in v.split(",") if d.strip()]
         return v
+
+    def model_post_init(self, __context: object) -> None:
+        """Merge legacy token into tokens dict."""
+        if self.token and self.token not in self.tokens:
+            # Legacy token gets full access
+            self.tokens[self.token] = ["*"]
 
     @field_validator("targets_dir", mode="before")
     @classmethod

@@ -41,6 +41,7 @@ dependencies = [
     "pydantic-settings>=2.0.0",
     "httpx>=0.24.0",
     "prometheus-fastapi-instrumentator>=6.0.0",
+    "cryptography>=41.0.0",
 ]
 
 [project.optional-dependencies]

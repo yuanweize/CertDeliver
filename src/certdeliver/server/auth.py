@@ -31,6 +31,45 @@ def verify_token(provided_token: str, expected_token: str) -> bool:
     )
 
 
+def verify_access(
+    provided_token: str, filename: str, tokens_map: dict[str, list[str]]
+) -> bool:
+    """
+    Verify if token is valid and has access to the requested file using fnmatch.
+
+    Args:
+        provided_token: Token provided by the requesting client.
+        filename: Name of the file being requested.
+        tokens_map: Dictionary mapping valid tokens to lists of allowed glob patterns.
+
+    Returns:
+        True if token is valid and authorized for the file.
+    """
+    if not provided_token:
+        return False
+
+    import fnmatch
+
+    # Iterate insecurely through keys is fine here since we secure check matches
+    # But secrets.compare_digest expects knowing the valid token first.
+    # To avoid timing leaks based on WHOSE token it is, we should iterate all.
+    # However, in this multi-tenant model without user IDs, we must iterate keys.
+    # Mitigation: The comparison itself is constant time PER token.
+
+    for valid_token, patterns in tokens_map.items():
+        if secrets.compare_digest(
+            provided_token.encode("utf-8"), valid_token.encode("utf-8")
+        ):
+            # Token matches, now check permissions
+            for pattern in patterns:
+                if fnmatch.fnmatch(filename, pattern):
+                    return True
+            # Token found but no matching pattern for file
+            return False
+
+    return False
+
+
 def sanitize_log_token(token: str, visible_chars: int = 4) -> str:
     """
     Sanitize token for logging by masking most characters.
@@ -50,29 +89,32 @@ def sanitize_log_token(token: str, visible_chars: int = 4) -> str:
 class TokenValidator:
     """Token validation with rate limiting support."""
 
-    def __init__(self, expected_token: str):
+    def __init__(self, tokens_map: dict[str, list[str]]):
         """
         Initialize the token validator.
 
         Args:
-            expected_token: The valid API token.
+            tokens_map: Dictionary of allowed tokens and their permissions.
         """
-        self.expected_token = expected_token
+        self.tokens_map = tokens_map
         self._failed_attempts: dict[str, int] = {}
         self._max_failed_attempts = 5
 
-    def validate(self, token: str, client_ip: str | None = None) -> bool:
+    def validate(
+        self, token: str, filename: str = "", client_ip: str | None = None
+    ) -> bool:
         """
-        Validate the provided token.
+        Validate the provided token for specific access.
 
         Args:
             token: Token to validate.
+            filename: File being accessed (optional, for permission check).
             client_ip: Client IP for rate limiting (optional).
 
         Returns:
             True if valid, False otherwise.
         """
-        is_valid = verify_token(token, self.expected_token)
+        is_valid = verify_access(token, filename, self.tokens_map)
 
         if client_ip:
             if is_valid:

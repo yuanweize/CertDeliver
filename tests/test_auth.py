@@ -62,17 +62,17 @@ class TestTokenValidator:
 
     def test_valid_token(self):
         """Test validation of correct token."""
-        validator = TokenValidator("valid-token")
+        validator = TokenValidator({"valid-token": ["*"]})
         assert validator.validate("valid-token") is True
 
     def test_invalid_token(self):
         """Test validation of incorrect token."""
-        validator = TokenValidator("valid-token")
+        validator = TokenValidator({"valid-token": ["*"]})
         assert validator.validate("invalid-token") is False
 
     def test_failed_attempts_tracking(self):
         """Test that failed attempts are tracked per IP."""
-        validator = TokenValidator("valid-token")
+        validator = TokenValidator({"valid-token": ["*"]})
 
         # Make some failed attempts
         for _ in range(3):
@@ -82,7 +82,7 @@ class TestTokenValidator:
 
     def test_successful_attempt_resets_count(self):
         """Test that successful attempt resets failed count."""
-        validator = TokenValidator("valid-token")
+        validator = TokenValidator({"valid-token": ["*"]})
 
         # Make some failed attempts
         for _ in range(3):
@@ -95,7 +95,7 @@ class TestTokenValidator:
 
     def test_is_blocked(self):
         """Test blocking after too many failed attempts."""
-        validator = TokenValidator("valid-token")
+        validator = TokenValidator({"valid-token": ["*"]})
         validator._max_failed_attempts = 3
 
         # Make failed attempts up to the limit
@@ -107,7 +107,7 @@ class TestTokenValidator:
 
     def test_reset_attempts(self):
         """Test manual reset of failed attempts."""
-        validator = TokenValidator("valid-token")
+        validator = TokenValidator({"valid-token": ["*"]})
 
         validator.validate("wrong", client_ip="192.168.1.1")
         validator.reset_attempts("192.168.1.1")

@@ -2,7 +2,9 @@
 API routes for CertDeliver server.
 """
 
+import json
 import logging
+from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi import APIRouter, Query, Request
@@ -22,17 +24,28 @@ _token_validator: TokenValidator | None = None
 _whitelist_manager: WhitelistManager | None = None
 
 
-def init_routes(token: str, domains: list[str]) -> None:
+def init_routes(
+    token: str = "",
+    domains: list[str] | None = None,
+    tokens: dict[str, list[str]] | None = None,
+) -> None:
     """
     Initialize route dependencies.
 
     Args:
-        token: API authentication token.
+        token: API authentication token (legacy).
         domains: List of allowed domains for whitelist.
+        tokens: Dictionary of valid tokens and their permissions (multi-tenant).
     """
     global _token_validator, _whitelist_manager
-    _token_validator = TokenValidator(token)
-    _whitelist_manager = WhitelistManager(domains)
+
+    # Use provided tokens map, or fallback to legacy token if tokens map is empty
+    auth_tokens = tokens or {}
+    if not auth_tokens and token:
+        auth_tokens = {token: ["*"]}
+
+    _token_validator = TokenValidator(auth_tokens)
+    _whitelist_manager = WhitelistManager(domains or [])
 
 
 def _get_client_ip(request: Request) -> str:
@@ -107,6 +120,35 @@ def _find_local_cert_file(targets_dir: Path) -> Path | None:
     return zip_files[0]
 
 
+def _log_audit(
+    request: Request,
+    filename: str,
+    status: str,
+    token: str = "",
+    reason: str = "",
+) -> None:
+    """
+    Log a structured audit record for security events.
+    """
+    client_ip = _get_client_ip(request)
+    user_agent = request.headers.get("user-agent", "unknown")
+    masked_token = sanitize_log_token(token) if token else "none"
+
+    audit_data = {
+        "event": "certificate_access",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "client_ip": client_ip,
+        "filename": filename,
+        "status": status,
+        "token_masked": masked_token,
+        "user_agent": user_agent,
+        "reason": reason,
+    }
+
+    # Log as a single line JSON-like string for easy parsing
+    logger.info(f"AUDIT_LOG | {json.dumps(audit_data)}")
+
+
 @router.get("/{file_name}", response_model=None)
 async def get_certificate(
     file_name: str,
@@ -143,6 +185,7 @@ async def get_certificate(
     if _whitelist_manager and settings.domain_list:
         if not await _whitelist_manager.is_whitelisted(client_ip):
             logger.warning(f"Client {client_ip} not in whitelist")
+            _log_audit(request, file_name, "denied", token, "client_not_whitelisted")
             return JSONResponse(
                 status_code=403,
                 content={"status": "error", "message": "Client IP not in whitelist"},
@@ -154,6 +197,7 @@ async def get_certificate(
             logger.warning(
                 f"Client {client_ip} is blocked due to too many failed attempts"
             )
+            _log_audit(request, file_name, "denied", token, "client_blocked")
             return JSONResponse(
                 status_code=429,
                 content={
@@ -162,11 +206,26 @@ async def get_certificate(
                 },
             )
 
-        if not _token_validator.validate(token, client_ip):
-            logger.warning(f"Invalid token from client {client_ip}")
+        # Validate token with filename for permission check
+        # We need to parse filename first to check permissions against it
+        try:
+            remote_name_check, _ = _parse_cert_filename(file_name)
+            # Use the original filename for pattern matching
+            target_file = file_name
+        except ValueError:
+            # Even if invalid filename, we pass it to validate to check if token exists at least
+            target_file = file_name
+
+        if not _token_validator.validate(token, target_file, client_ip):
+            logger.warning(
+                f"Invalid token or unauthorized access from client {client_ip} for {file_name}"
+            )
+            _log_audit(
+                request, file_name, "denied", token, "unauthorized_or_invalid_token"
+            )
             return JSONResponse(
-                status_code=401,
-                content={"status": "error", "message": "Invalid authentication token"},
+                status_code=403,
+                content={"status": "error", "message": "Unauthorized access"},
             )
 
     # Find local certificate file
@@ -174,6 +233,7 @@ async def get_certificate(
 
     if not local_cert:
         logger.error("No certificate file found in targets directory")
+        _log_audit(request, file_name, "error", token, "server_no_local_cert_file")
         return JSONResponse(
             status_code=404,
             content={"status": "error", "message": "No certificate file available"},
@@ -184,6 +244,7 @@ async def get_certificate(
         local_name, local_timestamp = _parse_cert_filename(local_cert.name)
     except ValueError as e:
         logger.error(f"Invalid local cert filename: {e}")
+        _log_audit(request, file_name, "error", token, "server_invalid_local_filename")
         return JSONResponse(
             status_code=500,
             content={"status": "error", "message": "Server configuration error"},
@@ -193,6 +254,9 @@ async def get_certificate(
         remote_name, remote_timestamp = _parse_cert_filename(file_name)
     except ValueError as e:
         logger.warning(f"Invalid remote filename from {client_ip}: {e}")
+        _log_audit(
+            request, file_name, "denied", token, "client_invalid_filename_format"
+        )
         return JSONResponse(
             status_code=400,
             content={"status": "error", "message": "Invalid filename format"},
@@ -202,12 +266,20 @@ async def get_certificate(
     if download:
         if local_name == remote_name:
             logger.info(f"First time download for {client_ip}: {local_cert.name}")
+            _log_audit(request, file_name, "success_download", token, "forced_download")
             return FileResponse(
                 path=local_cert, filename=local_cert.name, media_type="application/zip"
             )
         else:
             logger.warning(
                 f"File name mismatch for download: {local_name} != {remote_name}"
+            )
+            _log_audit(
+                request,
+                file_name,
+                "denied",
+                token,
+                f"download_name_mismatch_expected_{local_name}",
             )
             return JSONResponse(
                 status_code=404,
@@ -217,6 +289,13 @@ async def get_certificate(
     # Handle update check mode
     if local_name != remote_name:
         logger.info(f"File name mismatch: {local_name} != {remote_name}")
+        _log_audit(
+            request,
+            file_name,
+            "denied",
+            token,
+            f"update_check_name_mismatch_expected_{local_name}",
+        )
         return JSONResponse(
             status_code=400,
             content={"status": "error", "message": "Certificate name mismatch"},
@@ -224,6 +303,7 @@ async def get_certificate(
 
     if local_timestamp == remote_timestamp:
         logger.info(f"Certificate up to date for {client_ip}")
+        _log_audit(request, file_name, "success_up_to_date", token)
         return JSONResponse(
             status_code=200,
             content={"status": "ok", "message": "Certificate is up to date"},

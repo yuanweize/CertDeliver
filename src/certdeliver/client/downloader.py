@@ -81,10 +81,10 @@ class CertificateDownloader:
             self._client.close()
             self._client = None
 
-    def __enter__(self):
+    def __enter__(self) -> "CertificateDownloader":
         return self
 
-    def __exit__(self, *args):
+    def __exit__(self, exc_type: object, exc_val: object, exc_tb: object) -> None:
         self.close()
 
     def _ensure_directories(self) -> None:
@@ -178,7 +178,7 @@ class CertificateDownloader:
             # Parse filename from header
             for part in cd.split(";"):
                 if "filename=" in part:
-                    return part.split("=")[1].strip().strip('"')
+                    return str(part.split("=")[1].strip().strip('"'))
         return None
 
     def _install_certificate(self, cert_zip_path: Path) -> bool:

@@ -52,7 +52,7 @@ class ServerSettings(BaseSettings):
 
     @field_validator("domain_list", mode="before")
     @classmethod
-    def parse_domain_list(cls, v):
+    def parse_domain_list(cls, v: list[str] | str) -> list[str]:
         """Parse domain list from comma-separated string or list."""
         if isinstance(v, str):
             return [d.strip() for d in v.split(",") if d.strip()]
@@ -60,7 +60,7 @@ class ServerSettings(BaseSettings):
 
     @field_validator("targets_dir", mode="before")
     @classmethod
-    def parse_path(cls, v):
+    def parse_path(cls, v: str | Path) -> Path:
         """Convert string to Path."""
         if isinstance(v, str):
             return Path(v)
@@ -108,9 +108,11 @@ class ClientSettings(BaseSettings):
     timeout: int = Field(default=30, description="Request timeout in seconds")
     verify_ssl: bool = Field(default=True, description="Verify SSL certificates")
 
+
+
     @field_validator("cert_dest_path", "local_cache_dir", mode="before")
     @classmethod
-    def parse_path(cls, v):
+    def parse_path(cls, v: str | Path) -> Path:
         """Convert string to Path."""
         if isinstance(v, str):
             return Path(v)
@@ -140,7 +142,7 @@ class HookSettings(BaseSettings):
 
     @field_validator("letsencrypt_live_dir", "output_dir", mode="before")
     @classmethod
-    def parse_path(cls, v):
+    def parse_path(cls, v: str | Path) -> Path:
         """Convert string to Path."""
         if isinstance(v, str):
             return Path(v)

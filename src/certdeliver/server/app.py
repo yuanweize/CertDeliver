@@ -26,7 +26,12 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     settings = get_server_settings()
 
     # Initialize routes with settings
-    init_routes(token=settings.token, domains=settings.domain_list)
+    # Initialize routes with settings
+    domains = settings.domain_list
+    if isinstance(domains, str):
+        domains = [d.strip() for d in domains.split(",") if d.strip()]
+    
+    init_routes(token=settings.token, domains=domains)
 
     logger.info("CertDeliver server starting...")
     logger.info(f"Targets directory: {settings.targets_dir}")

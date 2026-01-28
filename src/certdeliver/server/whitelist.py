@@ -62,12 +62,16 @@ class WhitelistManager:
         try:
             # Get all address info for the domain
             addr_info = socket.getaddrinfo(
-                domain, None, socket.AF_UNSPEC if self.enable_ipv6 else socket.AF_INET
+                domain, None,
+                socket.AF_UNSPEC if self.enable_ipv6 else socket.AF_INET
             )
 
             for info in addr_info:
-                ip = info[4][0]
-                ips.add(ip)
+                # sockaddr is at index 4, and for IP stats it's a tuple where 0 is the IP string
+                sockaddr = info[4]
+                ip = sockaddr[0]  # This is the string representation of ID
+                if isinstance(ip, str):
+                    ips.add(ip)
 
         except socket.gaierror as e:
             logger.warning(f"Failed to resolve domain {domain}: {e}")
@@ -79,20 +83,24 @@ class WhitelistManager:
     async def _resolve_domain(self, domain: str) -> set[str]:
         """
         Asynchronously resolve a domain to IP addresses.
-
+        
         Args:
             domain: Domain name to resolve.
-
+        
         Returns:
             Set of resolved IP addresses.
         """
         loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(None, self._resolve_domain_sync, domain)
+        return await loop.run_in_executor(
+            None,
+            self._resolve_domain_sync,
+            domain
+        )
 
     async def refresh_cache(self, force: bool = False) -> None:
         """
         Refresh the IP cache by resolving all domains.
-
+        
         Args:
             force: Force refresh even if cache is valid.
         """
@@ -109,17 +117,24 @@ class WhitelistManager:
             new_cache: dict[str, set[str]] = {}
 
             # Resolve all domains concurrently
-            tasks = [self._resolve_domain(domain) for domain in self.domains]
-            results = await asyncio.gather(*tasks, return_exceptions=True)
+            tasks = [
+                self._resolve_domain(domain)
+                for domain in self.domains
+            ]
+            
+            # We need to type hint results to satisfy MyPy
+            # gather with return_exceptions=True can include BaseException
+            results: list[set[str] | BaseException] = await asyncio.gather(*tasks, return_exceptions=True)
 
             for domain, result in zip(self.domains, results, strict=False):
-                if isinstance(result, Exception):
+                if isinstance(result, BaseException):
                     logger.error(f"Error resolving {domain}: {result}")
                     # Keep old cache entry if available
                     if domain in self._cache:
                         new_cache[domain] = self._cache[domain]
-                else:
-                    new_cache[domain] = result
+                elif isinstance(result, set):
+                     # Explicit check to satisfy MyPy that result is set[str]
+                     new_cache[domain] = result
 
             self._cache = new_cache
             self._last_update = datetime.now()

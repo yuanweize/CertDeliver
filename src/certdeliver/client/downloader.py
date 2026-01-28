@@ -139,7 +139,9 @@ class CertificateDownloader:
 
         for attempt in range(retries):
             try:
-                logger.info(f"Requesting certificate: {url} (Attempt {attempt + 1}/{retries})")
+                logger.info(
+                    f"Requesting certificate: {url} (Attempt {attempt + 1}/{retries})"
+                )
                 response = self.client.get(url, params=params)
 
                 if response.status_code == 200:
@@ -162,13 +164,15 @@ class CertificateDownloader:
                             else:
                                 logger.info(f"Server response: {data}")
                         except Exception:
-                            logger.warning(f"Unexpected response: {response.text[:200]}")
+                            logger.warning(
+                                f"Unexpected response: {response.text[:200]}"
+                            )
                         return None
                 else:
                     logger.error(
                         f"Server returned error: {response.status_code} - {response.text[:200]}"
                     )
-                     # Don't retry on client errors (4xx), only server errors (5xx)
+                    # Don't retry on client errors (4xx), only server errors (5xx)
                     if 400 <= response.status_code < 500:
                         return None
 
@@ -177,7 +181,7 @@ class CertificateDownloader:
 
             # Exponential backoff if not the last attempt
             if attempt < retries - 1:
-                sleep_time = backoff_factor ** attempt
+                sleep_time = backoff_factor**attempt
                 logger.info(f"Retrying in {sleep_time} seconds...")
                 time.sleep(sleep_time)
 

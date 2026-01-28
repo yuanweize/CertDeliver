@@ -76,10 +76,13 @@ def create_app() -> FastAPI:
     # Initialize Prometheus metrics
     try:
         from prometheus_fastapi_instrumentator import Instrumentator
+
         Instrumentator().instrument(app).expose(app)
         logger.info("Prometheus metrics enabled at /metrics")
     except ImportError:
-        logger.warning("prometheus-fastapi-instrumentator not installed, metrics disabled")
+        logger.warning(
+            "prometheus-fastapi-instrumentator not installed, metrics disabled"
+        )
 
     # Add root endpoint
     @app.get("/")
@@ -116,11 +119,8 @@ def create_app() -> FastAPI:
             details["error"] = "Targets directory not found"
 
         return JSONResponse(
-            {
-                "status": status,
-                **details
-            },
-            status_code=200 if status == "healthy" else 503
+            {"status": status, **details},
+            status_code=200 if status == "healthy" else 503,
         )
 
     # Include API routes

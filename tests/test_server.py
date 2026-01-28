@@ -2,9 +2,10 @@
 Tests for CertDeliver server API routes.
 """
 
-import pytest
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
+import pytest
 from fastapi.testclient import TestClient
 
 from certdeliver.server.app import create_app
@@ -56,8 +57,13 @@ class TestServerApp:
     @pytest.fixture
     def client(self, mock_settings):
         """Create test client with mocked settings."""
-        with patch('certdeliver.server.app.get_server_settings', return_value=mock_settings):
-            with patch('certdeliver.server.routes.get_server_settings', return_value=mock_settings):
+        with patch(
+            "certdeliver.server.app.get_server_settings", return_value=mock_settings
+        ):
+            with patch(
+                "certdeliver.server.routes.get_server_settings",
+                return_value=mock_settings,
+            ):
                 app = create_app()
                 return TestClient(app)
 

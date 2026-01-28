@@ -3,14 +3,13 @@ Tests for CertDeliver configuration module.
 """
 
 import os
-import pytest
 from pathlib import Path
 from unittest.mock import patch
 
 from certdeliver.config import (
-    ServerSettings,
     ClientSettings,
     HookSettings,
+    ServerSettings,
     setup_logging,
 )
 
@@ -96,6 +95,6 @@ class TestSetupLogging:
         log_file = tmp_path / "test.log"
         logger = setup_logging(log_file=log_file, component="test_file")
         logger.info("Test message")
-        
+
         # Check file was created
         assert log_file.exists()

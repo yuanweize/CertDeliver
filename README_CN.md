@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🔐 CertDeliver
+# CertDeliver
 
 **自动化 SSL 证书分发服务**
 
@@ -18,7 +18,7 @@
 
 </div>
 
-## 📖 项目简介
+## 项目简介
 
 CertDeliver 可以自动将 SSL 证书从中心服务器分发到多台客户端机器。当 certbot 更新证书后，CertDeliver 会自动打包证书并让客户端自动下载。
 
@@ -32,18 +32,18 @@ CertDeliver 可以自动将 SSL 证书从中心服务器分发到多台客户端
                                                 └─────────────────┘
 ```
 
-## ✨ 功能特点
+## 功能特点
 
 | 功能 | 说明 |
 |------|------|
-| 🔐 **安全认证** | 常量时间令牌比较，防止时序攻击 |
-| 🌐 **IP 白名单** | 基于 DNS 的客户端验证 |
-| 📦 **自动打包** | Certbot 钩子自动打包证书 |
-| 🔄 **自动同步** | 客户端自动轮询和更新证书 |
-| 🐳 **Docker 支持** | 一键 Docker Compose 部署 |
-| ⚡ **现代技术栈** | Python 3.10+、FastAPI、Pydantic、类型提示 |
+| **安全认证** | 常量时间令牌比较，防止时序攻击 |
+| **IP 白名单** | 基于 DNS 的客户端验证 |
+| **自动打包** | Certbot 钩子自动打包证书 |
+| **自动同步** | 客户端自动轮询和更新证书 |
+| **Docker 支持** | 一键 Docker Compose 部署 |
+| **现代技术栈** | Python 3.10+、FastAPI、Pydantic、类型提示 |
 
-## 🚀 快速开始
+## 快速开始
 
 ### 系统要求
 
@@ -74,7 +74,7 @@ cp ../.env.example .env
 docker compose up -d
 ```
 
-## ⚙️ 配置说明
+## 配置说明
 
 CertDeliver 使用环境变量进行配置，创建 `.env` 文件：
 
@@ -95,7 +95,7 @@ CERTDELIVER_CLIENT_POST_UPDATE_COMMAND=systemctl reload nginx
 
 > 📄 查看 [config/.env.example](config/.env.example) 了解所有可用配置项。
 
-## 📦 服务器部署
+## 服务器部署
 
 ### 1. 配置 Certbot
 
@@ -152,7 +152,7 @@ server {
 }
 ```
 
-## 📱 客户端部署
+## 客户端部署
 
 ### 1. 安装
 
@@ -180,7 +180,7 @@ crontab -e
 30 6,18 * * * certdeliver-client >> /var/log/certdeliver.log 2>&1
 ```
 
-## 📁 项目结构
+## 项目结构
 
 ```
 CertDeliver/
@@ -203,7 +203,7 @@ CertDeliver/
 └── README.md
 ```
 
-## 🔌 API 接口
+## API 接口
 
 | 端点 | 方法 | 描述 |
 |------|------|------|
@@ -218,7 +218,7 @@ CertDeliver/
 | `token` | string | ✅ | 认证令牌 |
 | `download` | bool | ❌ | 强制下载模式 |
 
-## 🔒 安全特性
+## 安全特性
 
 - **无 Shell 注入**：使用 Python 原生 `shutil`、`zipfile`、`subprocess`
 - **时序安全认证**：使用 `secrets.compare_digest()` 比较令牌
@@ -226,7 +226,7 @@ CertDeliver/
 - **最小权限**：Systemd 服务安全加固
 - **非 Root Docker**：容器以非 root 用户运行
 
-## 🧪 开发指南
+## 开发指南
 
 ```bash
 # 安装开发依赖
@@ -242,11 +242,11 @@ mypy src/certdeliver
 ruff check src/
 ```
 
-## 📄 开源许可
+## 开源许可
 
 本项目基于 **GNU General Public License v3.0** 开源 - 详见 [LICENSE](LICENSE) 文件。
 
-## 🤝 参与贡献
+## 参与贡献
 
 欢迎贡献！请随时提交 Pull Request。
 

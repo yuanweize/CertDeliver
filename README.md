@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🔐 CertDeliver
+# CertDeliver
 
 **Automated SSL Certificate Distribution Service**
 
@@ -18,7 +18,7 @@
 
 </div>
 
-## 📖 Overview
+## Overview
 
 CertDeliver automates the distribution of SSL certificates from a central server to multiple client machines. When certbot renews your certificates, CertDeliver packages them and makes them available for clients to download automatically.
 
@@ -32,18 +32,18 @@ CertDeliver automates the distribution of SSL certificates from a central server
                                                 └─────────────────┘
 ```
 
-## ✨ Features
+## Features
 
 | Feature | Description |
 |---------|-------------|
-| 🔐 **Secure Auth** | Constant-time token comparison prevents timing attacks |
-| 🌐 **IP Whitelist** | DNS-based client verification |
-| 📦 **Auto Package** | Certbot hook bundles certs automatically |
-| 🔄 **Auto Sync** | Clients poll and update certs automatically |
-| 🐳 **Docker Ready** | One-command deployment with Docker Compose |
-| ⚡ **Modern Stack** | Python 3.10+, FastAPI, Pydantic, Type Hints |
+| **Secure Auth** | Constant-time token comparison prevents timing attacks |
+| **IP Whitelist** | DNS-based client verification |
+| **Auto Package** | Certbot hook bundles certs automatically |
+| **Auto Sync** | Clients poll and update certs automatically |
+| **Docker Ready** | One-command deployment with Docker Compose |
+| **Modern Stack** | Python 3.10+, FastAPI, Pydantic, Type Hints |
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -74,7 +74,7 @@ cp ../.env.example .env
 docker compose up -d
 ```
 
-## ⚙️ Configuration
+## Configuration
 
 CertDeliver uses environment variables for configuration. Create a `.env` file:
 
@@ -190,23 +190,23 @@ crontab -e
 
 ```
 CertDeliver/
-├── src/certdeliver/           # Source code
-│   ├── config.py              # Configuration (Pydantic)
-│   ├── server/                # FastAPI server
-│   │   ├── app.py             # Application entry
-│   │   ├── routes.py          # API endpoints
-│   │   ├── auth.py            # Authentication
-│   │   └── whitelist.py       # IP whitelist
-│   ├── client/                # Certificate downloader
-│   │   └── downloader.py
-│   └── hooks/                 # Certbot hooks
-│       └── certbot_hook.py
-├── tests/                     # Unit tests
-├── docker/                    # Docker deployment
-├── config/                    # Configuration examples
-├── scripts/                   # Installation scripts
-├── pyproject.toml             # Package configuration
-└── README.md
+├──src/certdeliver/           # Source code
+│   ├──config.py              # Configuration (Pydantic)
+│   ├──server/                # FastAPI server
+│   │   ├──app.py             # Application entry
+│   │   ├──routes.py          # API endpoints
+│   │   ├──auth.py            # Authentication
+│   │   └──whitelist.py       # IP whitelist
+│   ├──client/                # Certificate downloader
+│   │   └──downloader.py
+│   └──hooks/                 # Certbot hooks
+│       └──certbot_hook.py
+├──tests/                     # Unit tests
+├──docker/                    # Docker deployment
+├──config/                    # Configuration examples
+├──scripts/                   # Installation scripts
+├──pyproject.toml             # Package configuration
+└──README.md
 ```
 
 ## 🔌 API Reference
